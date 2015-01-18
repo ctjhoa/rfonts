@@ -11,8 +11,9 @@ fn main() {
         cli::versionopt(),
         getopts::optflag("l", "list", "List installed fonts"),
         getopts::optopt("s", "search", "Search font", "FONTNAME"),
-        getopts::optmulti("i", "install", "Install font(s)", "FONTNAME"),
+        getopts::optmulti("i", "install", "Install font(s) require a --source", "FONTNAME"),
         getopts::optmulti("d", "delete", "Delete font(s)", "FONTNAME"),
+        getopts::optmulti("s", "source", "Source file to use", "FILENAME"),
     ];
 
     let matches = cli::parse_args(opts);
@@ -31,7 +32,11 @@ fn main() {
         search_font(&*matches.opt_str("search").unwrap());
     }
     if matches.opt_present("install") {
-        install_font(&*matches.opt_str("install").unwrap());
+        if matches.opt_present("source") {
+            install_font(&*matches.opt_str("source").unwrap(), &*matches.opt_str("install").unwrap());
+        } else {
+            println!("{}", cli::usage_string(opts));
+        }
     }
     if matches.opt_present("delete") {
         delete_font(&*matches.opt_str("delete").unwrap());
@@ -76,9 +81,9 @@ fn search_font(name: &str) {
     println!("body={}", resp.status);
 }
 
-fn install_font(name: &str) {
+fn install_font(source: &str, name: &str) {
     let font_path = get_font_path(name);
-    fs::copy(&Path::new("foo.txt"), &font_path).unwrap();
+    fs::copy(&Path::new(source), &font_path).unwrap();
 }
 
 fn delete_font(name: &str) {
