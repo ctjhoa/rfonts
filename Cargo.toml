@@ -9,3 +9,6 @@ git = "https://github.com/hyperium/hyper.git"
 
 [dependencies.cli]
 git = "https://github.com/evnm/cli.rs.git"
+
+[dependencies.clippy]
+git = "https://github.com/Manishearth/rust-clippy.git"

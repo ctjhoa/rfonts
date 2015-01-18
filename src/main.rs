@@ -1,3 +1,8 @@
+#![feature(plugin)]
+
+#[plugin]
+extern crate clippy;
+
 extern crate cli;
 extern crate getopts;
 extern crate hyper;
