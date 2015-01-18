@@ -3,14 +3,7 @@ extern crate getopts;
 extern crate hyper;
 
 use std::os;
-use std::io::fs::PathExtensions;
 use std::io::fs;
-use std::io::File;
-
-enum StringResult {
-    StringOK(String),
-    ErrorReason(String),
-}
 
 fn main() {
     let opts = &[
@@ -23,9 +16,6 @@ fn main() {
     ];
 
     let matches = cli::parse_args(opts);
-    if matches.free.is_empty() {
-        println!("{}", cli::usage_string(opts));
-    }
     if matches.opt_present("help") {
         println!("{}", cli::usage_string(opts));
         return;
@@ -38,7 +28,13 @@ fn main() {
         list_installed_fonts();
     }
     if matches.opt_present("search") {
-        //search_font(matches.opt_str("search"));
+        search_font(matches.opt_str("search").unwrap().as_slice());
+    }
+    if matches.opt_present("install") {
+        install_font(matches.opt_str("install").unwrap().as_slice());
+    }
+    if matches.opt_present("delete") {
+        delete_font(matches.opt_str("delete").unwrap().as_slice());
     }
 }
 
@@ -60,27 +56,33 @@ fn get_font_dir() -> Path {
     }
 }
 
+fn get_font_path(name: &str) -> Path {
+    get_font_dir().join(name)
+}
+
 fn list_installed_fonts() {
-    let font_dir = get_font_dir();
-    println!("{}", font_dir.display());
-    let fontPaths = fs::readdir(&font_dir).unwrap();
-    for font in fontPaths.iter() {
+    let font_dir : Path = get_font_dir();
+    let font_paths : Vec<Path> = fs::readdir(&font_dir).unwrap();
+    for font in font_paths.iter() {
         println!("{}", font.filename_str().unwrap());
     }
 }
 
-fn search_font(name: String) {
+fn search_font(name: &str) {
     let mut client = hyper::Client::new();
     let resp = client
-        //.get("https://www.google.com")
-        .get("https://api.github.com/search/repositories?q=rfont+in:name&sort=stars&order=desc")
+        .get(format!("http://api.github.com/search/repositories?q={}+in:name&sort=stars&order=desc", name).as_slice())
         .send().unwrap();
     println!("body={}", resp.status);
 }
 
 fn install_font(name: &str) {
+    let font_path = get_font_path(name);
+    fs::copy(&Path::new("foo.txt"), &font_path).unwrap();
 }
 
 fn delete_font(name: &str) {
+    let font_path = get_font_path(name);
+    fs::unlink(&font_path).unwrap();
 }
 
