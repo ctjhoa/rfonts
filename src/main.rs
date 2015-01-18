@@ -28,13 +28,13 @@ fn main() {
         list_installed_fonts();
     }
     if matches.opt_present("search") {
-        search_font(matches.opt_str("search").unwrap().as_slice());
+        search_font(&*matches.opt_str("search").unwrap());
     }
     if matches.opt_present("install") {
-        install_font(matches.opt_str("install").unwrap().as_slice());
+        install_font(&*matches.opt_str("install").unwrap());
     }
     if matches.opt_present("delete") {
-        delete_font(matches.opt_str("delete").unwrap().as_slice());
+        delete_font(&*matches.opt_str("delete").unwrap());
     }
 }
 
@@ -71,7 +71,7 @@ fn list_installed_fonts() {
 fn search_font(name: &str) {
     let mut client = hyper::Client::new();
     let resp = client
-        .get(format!("http://api.github.com/search/repositories?q={}+in:name&sort=stars&order=desc", name).as_slice())
+        .get(&*format!("http://api.github.com/search/repositories?q={}+in:name&sort=stars&order=desc", name))
         .send().unwrap();
     println!("body={}", resp.status);
 }
