@@ -66,33 +66,45 @@ fn get_font_dir() -> Path {
     }
 }
 
-fn get_font_path(name: &str) -> Path {
-    get_font_dir().join(name)
+fn get_font_path(font_name: &str) -> Path {
+    get_font_dir().join(font_name)
 }
 
 fn list_installed_fonts() {
-    let font_dir : Path = get_font_dir();
-    let font_paths : Vec<Path> = fs::readdir(&font_dir).unwrap();
-    for font in font_paths.iter() {
-        println!("{}", font.filename_str().unwrap());
+    let font_dir = get_font_dir();
+    match fs::readdir(&font_dir) {
+        Ok(fonts) => for font in fonts.iter() {
+            if let Some(font_name) = font.filename_str() {
+                println!("{}", font_name);
+            }
+        },
+        Err(msg) => println!("{}", msg)
     }
 }
 
-fn search_font(name: &str) {
+fn search_font(font_name: &str) {
     let mut client = hyper::Client::new();
-    let resp = client
-        .get(&*format!("http://api.github.com/search/repositories?q={}+in:name&sort=stars&order=desc", name))
-        .send().unwrap();
-    println!("body={}", resp.status);
+    let url = format!("http://api.github.com/search/repositories?q={}+in:name&sort=stars&order=desc", font_name);
+    println!("{}", url);
+    match client.get(&*url).send() {
+        Ok(resp) => println!("body={}", resp.status),
+        Err(msg) => println!("{}", msg)
+    }
 }
 
-fn install_font(source: &str, name: &str) {
-    let font_path = get_font_path(name);
-    fs::copy(&Path::new(source), &font_path).unwrap();
+fn install_font(source: &str, font_name: &str) {
+    let dest_font_path = get_font_path(font_name);
+    match fs::copy(&Path::new(source), &dest_font_path) {
+        Ok(_) => println!("Font {} installed successfully", font_name),
+        Err(msg) => println!("{}", msg)
+    }
 }
 
-fn delete_font(name: &str) {
-    let font_path = get_font_path(name);
-    fs::unlink(&font_path).unwrap();
+fn delete_font(font_name: &str) {
+    let font_path = get_font_path(font_name);
+    match fs::unlink(&font_path) {
+        Ok(_) => println!("Font {} deleted successfully", font_name),
+        Err(msg) => println!("{}", msg)
+    }
 }
 
