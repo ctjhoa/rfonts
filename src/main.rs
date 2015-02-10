@@ -7,7 +7,7 @@ extern crate cli;
 extern crate getopts;
 extern crate hyper;
 
-//use std::os;
+use std::os;
 use std::env;
 use std::old_io::fs;
 use getopts::Options;
@@ -60,8 +60,14 @@ fn get_font_dir() -> Path {
         },
         "macos" => {
             match env::home_dir() {
-                Some(ref p) => p.join(".fonts"),
+                Some(ref p) => p.join("Library").join("Fonts"),
                 None => panic!("Impossible to get your home dir!")
+            }
+        },
+        "windows" => {
+            match os::getenv("SystemRoot") {
+                Some(val) => Path::new(val).join("Fonts"),
+                None => panic!("Impossible to get your font dir")
             }
         },
         _ => unreachable!(),
@@ -87,7 +93,7 @@ fn list_installed_fonts() {
 fn search_font(font_name: &str) {
     let mut client = hyper::Client::new();
     let url = format!("http://api.github.com/search/repositories?q={}+in:name&sort=stars&order=desc", font_name);
-    let mut resp = client.get(&*url).send();
+    let resp = client.get(&*url).send();
     match resp {
         Ok(mut data) => match data.read_to_string() {
             Ok(body) => println!("body={}", body),
