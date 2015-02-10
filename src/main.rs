@@ -1,29 +1,31 @@
-#![feature(plugin)]
-
-#[plugin]
-extern crate clippy;
+//#![feature(plugin)]
+//
+//#[plugin]
+//extern crate clippy;
 
 extern crate cli;
 extern crate getopts;
 extern crate hyper;
 
-use std::os;
-use std::io::fs;
+//use std::os;
+use std::env;
+use std::old_io::fs;
+use getopts::Options;
 
 fn main() {
-    let opts = &[
-        cli::helpopt(),
-        cli::versionopt(),
-        getopts::optflag("l", "list", "List installed fonts"),
-        getopts::optopt("s", "search", "Search font", "FONTNAME"),
-        getopts::optmulti("i", "install", "Install font(s) require a --source", "FONTNAME"),
-        getopts::optmulti("d", "delete", "Delete font(s)", "FONTNAME"),
-        getopts::optmulti("s", "source", "Source file to use", "FILENAME"),
-    ];
+    let mut opts = Options::new();
+    cli::helpopt(&mut opts);
+    cli::versionopt(&mut opts);
+    opts.optflag("l", "list", "List installed fonts");
+    opts.optopt("s", "search", "Search font", "FONTNAME");
+    opts.optmulti("i", "install", "Install font(s) require a --source", "FONTNAME");
+    opts.optmulti("d", "delete", "Delete font(s)", "FONTNAME");
+    opts.optmulti("s", "source", "Source file to use", "FILENAME");
 
-    let matches = cli::parse_args(opts);
+    let matches = cli::parse_args(&opts);
+
     if matches.opt_present("help") {
-        println!("{}", cli::usage_string(opts));
+        println!("{}", cli::usage_string(&opts));
         return;
     }
     if matches.opt_present("version") {
@@ -40,7 +42,7 @@ fn main() {
         if matches.opt_present("source") {
             install_font(&*matches.opt_str("source").unwrap(), &*matches.opt_str("install").unwrap());
         } else {
-            println!("{}", cli::usage_string(opts));
+            println!("{}", opts.usage("ttoo"));
         }
     }
     if matches.opt_present("delete") {
@@ -49,15 +51,15 @@ fn main() {
 }
 
 fn get_font_dir() -> Path {
-    match os::consts::SYSNAME {
+    match env::consts::OS {
         "linux" => {
-            match os::homedir() {
+            match env::home_dir() {
                 Some(ref p) => p.join(".fonts"),
                 None => panic!("Impossible to get your home dir!")
             }
         },
         "macos" => {
-            match os::homedir() {
+            match env::home_dir() {
                 Some(ref p) => p.join(".fonts"),
                 None => panic!("Impossible to get your home dir!")
             }
@@ -85,11 +87,14 @@ fn list_installed_fonts() {
 fn search_font(font_name: &str) {
     let mut client = hyper::Client::new();
     let url = format!("http://api.github.com/search/repositories?q={}+in:name&sort=stars&order=desc", font_name);
-    println!("{}", url);
-    match client.get(&*url).send() {
-        Ok(resp) => println!("body={}", resp.status),
-        Err(msg) => println!("{}", msg)
-    }
+    let mut resp = client.get(&*url).send();
+    match resp {
+        Ok(mut data) => match data.read_to_string() {
+            Ok(body) => println!("body={}", body),
+            Err(err) => println!("{}", err)
+        },
+        Err(err) => println!("{}", err)
+    };
 }
 
 fn install_font(source: &str, font_name: &str) {

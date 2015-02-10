@@ -4,11 +4,9 @@ name = "rfonts"
 version = "0.0.1"
 authors = ["Camille TJHOA <camille.tjhoa@gmail.com>"]
 
-[dependencies.hyper]
-git = "https://github.com/hyperium/hyper.git"
+[dependencies]
+hyper = "0.1.11"
+getopts = "0.2.3"
 
 [dependencies.cli]
-git = "https://github.com/evnm/cli.rs.git"
-
-[dependencies.clippy]
-git = "https://github.com/Manishearth/rust-clippy.git"
+git = "https://github.com/evnm/cli.rs"
