@@ -12,6 +12,8 @@ use std::env;
 use std::old_io::fs;
 use getopts::Options;
 
+static FONT_EXTENSIONS : [&'static str; 2] = ["ttf", "otf", "pcf", "bdf"];
+
 fn main() {
     let mut opts = Options::new();
     cli::helpopt(&mut opts);
@@ -67,7 +69,7 @@ fn get_font_dir() -> Path {
         "windows" => {
             match os::getenv("SystemRoot") {
                 Some(val) => Path::new(val).join("Fonts"),
-                None => panic!("Impossible to get your font dir")
+                None => panic!("Impossible to get your font dir!")
             }
         },
         _ => unreachable!(),
@@ -81,11 +83,18 @@ fn get_font_path(font_name: &str) -> Path {
 fn list_installed_fonts() {
     let font_dir = get_font_dir();
     match fs::readdir(&font_dir) {
-        Ok(fonts) => for font in fonts.iter() {
-            if let Some(font_name) = font.filename_str() {
-                println!("{}", font_name);
+        Ok(fonts) => {
+            let mut it_fonts = fonts.iter().filter(|&f| {
+                FONT_EXTENSIONS.iter().find(|&ext| {
+                    *f.extension_str().unwrap().to_string() == *ext.to_string()
+                }).is_some()
+            });
+            for font in it_fonts {
+                if let Some(font_name) = font.filename_str() {
+                    println!("{}", font_name);
+                }
             }
-        },
+        }
         Err(msg) => println!("{}", msg)
     }
 }
