@@ -8,11 +8,11 @@ extern crate getopts;
 extern crate hyper;
 
 use std::os;
-use std::env;
-use std::old_io::fs;
+use std::{env, fs, io, path};
+use std::io::Read;
 use getopts::Options;
 
-static FONT_EXTENSIONS : [&'static str; 2] = ["ttf", "otf", "pcf", "bdf"];
+static FONT_EXTENSIONS : [&'static str; 4] = ["ttf", "otf", "pcf", "bdf"];
 
 fn main() {
     let mut opts = Options::new();
@@ -40,19 +40,17 @@ fn main() {
     if matches.opt_present("search") {
         search_font(&*matches.opt_str("search").unwrap());
     }
-    if matches.opt_present("install") {
-        if matches.opt_present("source") {
-            install_font(&*matches.opt_str("source").unwrap(), &*matches.opt_str("install").unwrap());
-        } else {
-            println!("{}", opts.usage("ttoo"));
-        }
+    if matches.opt_present("install") && matches.opt_present("source") {
+        install_font(&*matches.opt_str("source").unwrap(), &*matches.opt_str("install").unwrap());
+    } else {
+        println!("{}", opts.usage("ttoo"));
     }
     if matches.opt_present("delete") {
         delete_font(&*matches.opt_str("delete").unwrap());
     }
 }
 
-fn get_font_dir() -> Path {
+fn get_font_dir() -> path::PathBuf {
     match env::consts::OS {
         "linux" => {
             match env::home_dir() {
@@ -68,7 +66,7 @@ fn get_font_dir() -> Path {
         },
         "windows" => {
             match os::getenv("SystemRoot") {
-                Some(val) => Path::new(val).join("Fonts"),
+                Some(ref val) => path::Path::new(val).join("Fonts"),
                 None => panic!("Impossible to get your font dir!")
             }
         },
@@ -76,21 +74,30 @@ fn get_font_dir() -> Path {
     }
 }
 
-fn get_font_path(font_name: &str) -> Path {
-    get_font_dir().join(font_name)
+fn get_font_path(font_name: &str) -> path::PathBuf {
+    get_font_dir().join(font_name.as_slice())
 }
+
+//let dir_results: Vec<_> = std::fs::read_dir("foo").and_then(|dir| dir.collect());
+//
+//let dir_results: Vec<_> = std::fs::read_dir("foo").and_then(|dir| dir.collect()).unwrap() ;
+//
+//let dir_results: Result<Vec<_>, _> = std::fs::read_dir("foo").and_then(|dir| dir.collect());
+
+
 
 fn list_installed_fonts() {
     let font_dir = get_font_dir();
-    match fs::readdir(&font_dir) {
+    match fs::read_dir(&font_dir) {
         Ok(fonts) => {
-            let mut it_fonts = fonts.iter().filter(|&f| {
+            let mut it_fonts = fonts.filter(|ref f| {
                 FONT_EXTENSIONS.iter().find(|&ext| {
-                    *f.extension_str().unwrap().to_string() == *ext.to_string()
+                    //*f.unwrap().path().extension().unwrap()..into_string() == *ext.to_string()
+                 true
                 }).is_some()
             });
             for font in it_fonts {
-                if let Some(font_name) = font.filename_str() {
+                if let Some(font_name) = font.ok().unwrap().path().file_name().unwrap().to_str() {
                     println!("{}", font_name);
                 }
             }
@@ -104,9 +111,10 @@ fn search_font(font_name: &str) {
     let url = format!("http://api.github.com/search/repositories?q={}+in:name&sort=stars&order=desc", font_name);
     let resp = client.get(&*url).send();
     match resp {
-        Ok(mut data) => match data.read_to_string() {
-            Ok(body) => println!("body={}", body),
-            Err(err) => println!("{}", err)
+        Ok(mut data) => {
+            let mut body = String::new();
+            data.read_to_string(&mut body).ok();
+            println!("body={}", body);
         },
         Err(err) => println!("{}", err)
     };
@@ -122,7 +130,7 @@ fn install_font(source: &str, font_name: &str) {
 
 fn delete_font(font_name: &str) {
     let font_path = get_font_path(font_name);
-    match fs::unlink(&font_path) {
+    match fs::remove_file(&font_path) {
         Ok(_) => println!("Font {} deleted successfully", font_name),
         Err(msg) => println!("{}", msg)
     }
