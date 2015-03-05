@@ -3,6 +3,12 @@
 //#[plugin]
 //extern crate clippy;
 
+#![feature(io)] 
+#![feature(os)] 
+#![feature(fs)] 
+#![feature(path)] 
+#![feature(core)] 
+
 extern crate cli;
 extern crate getopts;
 extern crate hyper;
@@ -122,7 +128,7 @@ fn search_font(font_name: &str) {
 
 fn install_font(source: &str, font_name: &str) {
     let dest_font_path = get_font_path(font_name);
-    match fs::copy(&Path::new(source), &dest_font_path) {
+    match fs::copy(&path::Path::new(source), &dest_font_path) {
         Ok(_) => println!("Font {} installed successfully", font_name),
         Err(msg) => println!("{}", msg)
     }
