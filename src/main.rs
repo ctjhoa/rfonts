@@ -96,10 +96,9 @@ fn list_installed_fonts() {
     let font_dir = get_font_dir();
     match fs::read_dir(&font_dir) {
         Ok(fonts) => {
-            let mut it_fonts = fonts.filter(|ref f| {
+            let mut it_fonts = fonts.filter(|&f| {
                 FONT_EXTENSIONS.iter().find(|&ext| {
-                    //*f.unwrap().path().extension().unwrap()..into_string() == *ext.to_string()
-                 true
+                    &*f.unwrap().path().extension().unwrap().to_str().unwrap() == *ext
                 }).is_some()
             });
             for font in it_fonts {
@@ -107,7 +106,7 @@ fn list_installed_fonts() {
                     println!("{}", font_name);
                 }
             }
-        }
+        },
         Err(msg) => println!("{}", msg)
     }
 }
