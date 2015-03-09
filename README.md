@@ -1,2 +1,2 @@
-# rfonts
+# rfonts (experimental)
 Rust font manager
