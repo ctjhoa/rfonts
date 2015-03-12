@@ -95,12 +95,11 @@ fn get_font_path(font_name: &str) -> path::PathBuf {
 fn list_installed_fonts() {
     let font_dir = get_font_dir();
     match fs::read_dir(&font_dir) {
-        Ok(fonts) => {
-            let mut it_fonts = fonts.filter(|&f| {
-                FONT_EXTENSIONS.iter().find(|&ext| {
-                    &*f.unwrap().path().extension().unwrap().to_str().unwrap() == *ext
-                }).is_some()
+        Ok(files) => {
+            let mut it_fonts = files.filter(|f| {
+                EXTENSIONS.contains(&f.as_ref().unwrap().path().extension().unwrap().to_str().unwrap())
             });
+
             for font in it_fonts {
                 if let Some(font_name) = font.ok().unwrap().path().file_name().unwrap().to_str() {
                     println!("{}", font_name);
