@@ -4,8 +4,6 @@
 //extern crate clippy;
 
 #![feature(io)] 
-#![feature(os)] 
-#![feature(fs)] 
 #![feature(path)] 
 #![feature(core)] 
 
@@ -13,8 +11,7 @@ extern crate cli;
 extern crate getopts;
 extern crate hyper;
 
-use std::os;
-use std::{env, fs, io, path};
+use std::{env, fs, path};
 use std::io::Read;
 use getopts::Options;
 
@@ -48,8 +45,6 @@ fn main() {
     }
     if matches.opt_present("install") && matches.opt_present("source") {
         install_font(&*matches.opt_str("source").unwrap(), &*matches.opt_str("install").unwrap());
-    } else {
-        println!("{}", opts.usage("ttoo"));
     }
     if matches.opt_present("delete") {
         delete_font(&*matches.opt_str("delete").unwrap());
@@ -71,7 +66,7 @@ fn get_font_dir() -> path::PathBuf {
             }
         },
         "windows" => {
-            match os::getenv("SystemRoot") {
+            match env::var_os("SystemRoot") {
                 Some(ref val) => path::Path::new(val).join("Fonts"),
                 None => panic!("Impossible to get your font dir!")
             }
@@ -96,8 +91,8 @@ fn list_installed_fonts() {
     let font_dir = get_font_dir();
     match fs::read_dir(&font_dir) {
         Ok(files) => {
-            let mut it_fonts = files.filter(|f| {
-                EXTENSIONS.contains(&f.as_ref().unwrap().path().extension().unwrap().to_str().unwrap())
+            let it_fonts = files.filter(|f| {
+                FONT_EXTENSIONS.contains(&f.as_ref().unwrap().path().extension().unwrap().to_str().unwrap())
             });
 
             for font in it_fonts {
