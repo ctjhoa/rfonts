@@ -5,7 +5,7 @@ version = "0.0.1"
 authors = ["Camille TJHOA <camille.tjhoa@gmail.com>"]
 
 [dependencies]
-hyper = "0.3.0"
+hyper = "0.3.1"
 getopts = "0.2.4"
 
 [dependencies.cli]
