@@ -3,10 +3,6 @@
 //#[plugin]
 //extern crate clippy;
 
-#![feature(io)] 
-#![feature(path)] 
-#![feature(core)] 
-
 extern crate cli;
 extern crate getopts;
 extern crate hyper;
@@ -76,28 +72,26 @@ fn get_font_dir() -> path::PathBuf {
 }
 
 fn get_font_path(font_name: &str) -> path::PathBuf {
-    get_font_dir().join(font_name.as_slice())
+    get_font_dir().join(font_name)
 }
-
-//let dir_results: Vec<_> = std::fs::read_dir("foo").and_then(|dir| dir.collect());
-//
-//let dir_results: Vec<_> = std::fs::read_dir("foo").and_then(|dir| dir.collect()).unwrap() ;
-//
-//let dir_results: Result<Vec<_>, _> = std::fs::read_dir("foo").and_then(|dir| dir.collect());
-
-
 
 fn list_installed_fonts() {
     let font_dir = get_font_dir();
     match fs::read_dir(&font_dir) {
-        Ok(files) => {
-            let it_fonts = files.filter(|f| {
-                FONT_EXTENSIONS.contains(&f.as_ref().unwrap().path().extension().unwrap().to_str().unwrap())
-            });
-
-            for font in it_fonts {
-                if let Some(font_name) = font.ok().unwrap().path().file_name().unwrap().to_str() {
-                    println!("{}", font_name);
+        Ok(entries) => {
+            let files : Vec<_> = entries.filter_map(|f| {
+                f.as_ref().ok().and_then(|dir_entry| {
+                    Some(dir_entry.path())
+                })
+            }).collect();
+            
+            for path in files {
+                if let Some(ext) = path.extension() {
+                    if FONT_EXTENSIONS.contains(&&*ext.to_string_lossy()) {
+                        if let Some(file_name) = path.file_name() {
+                            println!("{}", file_name.to_string_lossy());
+                        }
+                    }
                 }
             }
         },

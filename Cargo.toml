@@ -5,8 +5,8 @@ version = "0.0.1"
 authors = ["Camille TJHOA <camille.tjhoa@gmail.com>"]
 
 [dependencies]
-hyper = "0.3.1"
-getopts = "0.2.4"
+hyper = "0.3.6"
+getopts = "0.2.6"
 
 [dependencies.cli]
 git = "https://github.com/evnm/cli.rs"
