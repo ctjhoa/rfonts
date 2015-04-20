@@ -3,47 +3,53 @@
 //#[plugin]
 //extern crate clippy;
 
-extern crate cli;
-extern crate getopts;
+//extern crate cli;
+#![feature(plugin)]
+#![plugin(docopt_macros)]
+
 extern crate hyper;
+extern crate docopt;
+extern crate rustc_serialize;
 
 use std::{env, fs, path};
 use std::io::Read;
-use getopts::Options;
+use docopt::Docopt;
 
 static FONT_EXTENSIONS : [&'static str; 4] = ["ttf", "otf", "pcf", "bdf"];
 
+docopt!(Args derive Debug, "
+Rusty fonts. Simple font manager written in rust made for 
+
+Usage:
+    rfonts list
+    rfonts search <font-name>
+    rfonts install <source> <font-name>
+    rfonts delete <font-name>
+    rfonts (-h | --help)
+    rfonts --version
+
+Options:
+    -h --help     Show this screen.
+    --version     Show version.
+");
+
 fn main() {
-    let mut opts = Options::new();
-    cli::helpopt(&mut opts);
-    cli::versionopt(&mut opts);
-    opts.optflag("l", "list", "List installed fonts");
-    opts.optopt("s", "search", "Search font", "FONTNAME");
-    opts.optmulti("i", "install", "Install font(s) require a --source", "FONTNAME");
-    opts.optmulti("d", "delete", "Delete font(s)", "FONTNAME");
-    opts.optmulti("s", "source", "Source file to use", "FILENAME");
-
-    let matches = cli::parse_args(&opts);
-
-    if matches.opt_present("help") {
-        println!("{}", cli::usage_string(&opts));
+    let args: Args = Args::docopt().decode().unwrap_or_else(|e| e.exit());
+    if args.flag_version {
+        println!("rfonts version 0.0.1");
         return;
     }
-    if matches.opt_present("version") {
-        println!("{}", cli::version_string("0.0.1"));
-        return;
-    }
-    if matches.opt_present("list") {
+    if args.cmd_list {
         list_installed_fonts();
     }
-    if matches.opt_present("search") {
-        search_font(&*matches.opt_str("search").unwrap());
+    if args.cmd_search {
+        search_font(&*args.arg_font_name);
     }
-    if matches.opt_present("install") && matches.opt_present("source") {
-        install_font(&*matches.opt_str("source").unwrap(), &*matches.opt_str("install").unwrap());
+    if args.cmd_install {
+        install_font(&*args.arg_source, &*args.arg_font_name);
     }
-    if matches.opt_present("delete") {
-        delete_font(&*matches.opt_str("delete").unwrap());
+    if args.cmd_delete {
+        delete_font(&*args.arg_font_name);
     }
 }
 
