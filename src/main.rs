@@ -1,11 +1,7 @@
-//#![feature(plugin)]
-//
-//#[plugin]
-//extern crate clippy;
-
-//extern crate cli;
 #![feature(plugin)]
-#![plugin(docopt_macros)]
+
+#![plugin(clippy,docopt_macros)]
+#![deny(clippy)]
 
 extern crate hyper;
 extern crate docopt;
@@ -128,23 +124,20 @@ fn install_font(source: &str, font_name: &str) {
         Ok(_) => println!("Font {} installed successfully", font_name),
         Err(msg) => println!("{}", msg)
     };
-    match env::consts::OS {
-        "windows" => {
-            let output = Command::new("reg").arg("add").arg(WIN_FONT_REGISTRY)
-                .arg("/v").arg(format!("{} (TrueType)", font_name))
-                .arg("/t").arg("REG_SZ")
-                .arg("/d").arg(format!("{}", font_name))
-                .arg("/f")
-                .output().unwrap_or_else(|e| {
-                    panic!("failed to execute process: {}", e)
-                });
-            if output.status.success() {
-                let s = String::from_utf8_lossy(&output.stdout);
-                println!("Post-install scripts:");
-                print!("{}", s);
-            }
-        },
-        _ => {},
+    if "windows" == env::consts::OS {
+        let output = Command::new("reg").arg("add").arg(WIN_FONT_REGISTRY)
+            .arg("/v").arg(format!("{} (TrueType)", font_name))
+            .arg("/t").arg("REG_SZ")
+            .arg("/d").arg(format!("{}", font_name))
+            .arg("/f")
+            .output().unwrap_or_else(|e| {
+                panic!("failed to execute process: {}", e)
+            });
+        if output.status.success() {
+            let s = String::from_utf8_lossy(&output.stdout);
+            println!("Post-install scripts:");
+            print!("{}", s);
+        }
     };
 }
 

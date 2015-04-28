@@ -6,6 +6,9 @@ authors = ["Camille TJHOA <camille.tjhoa@gmail.com>"]
 
 [dependencies]
 hyper = "0.3.14"
-docopt = "0.6.62"
-docopt_macros = "0.6.62"
-rustc-serialize = "0.3.12"
+docopt = "0.6.63"
+docopt_macros = "0.6.63"
+rustc-serialize = "0.3.14"
+
+[dependencies.clippy]
+git = "https://github.com/Manishearth/rust-clippy"
