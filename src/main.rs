@@ -1,7 +1,8 @@
 #![feature(plugin)]
 
-#![plugin(clippy,docopt_macros)]
-#![deny(clippy)]
+#![plugin(docopt_macros)]
+// #![plugin(clippy,docopt_macros)]
+// #![deny(clippy)]
 
 extern crate hyper;
 extern crate docopt;
