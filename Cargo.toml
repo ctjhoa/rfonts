@@ -5,13 +5,10 @@ version = "0.0.1"
 authors = ["Camille TJHOA <camille.tjhoa@gmail.com>"]
 
 [dependencies]
-hyper = "0.5.0"
-docopt = "0.6.64"
-docopt_macros = "0.6.64"
-rustc-serialize = "*"
-
-# [dev-dependencies]
-# clippy = "0.0.4"
+hyper = "0.7"
+docopt = "0.6"
+docopt_macros = "0.6"
+rustc-serialize = "0.3"
 
 # [dependencies.clippy]
 # git = "https://github.com/Manishearth/rust-clippy"

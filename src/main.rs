@@ -1,8 +1,6 @@
 #![feature(plugin)]
 
 #![plugin(docopt_macros)]
-// #![plugin(clippy,docopt_macros)]
-// #![deny(clippy)]
 
 extern crate hyper;
 extern crate docopt;
@@ -12,13 +10,11 @@ use std::{env, fs, path};
 use std::io::Read;
 use std::process::Command;
 
-use docopt::Docopt;
-
 static FONT_EXTENSIONS : [&'static str; 4] = ["ttf", "otf", "pcf", "bdf"];
 static WIN_FONT_REGISTRY : &'static str = "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts";
 
 docopt!(Args derive Debug, "
-Rusty fonts. Simple font manager written in rust made for 
+Rusty fonts. Simple font manager written in rust made for
 
 Usage:
     rfonts list
@@ -90,7 +86,7 @@ fn list_installed_fonts() {
                     Some(dir_entry.path())
                 })
             }).collect();
-            
+
             for path in files {
                 if let Some(ext) = path.extension() {
                     if FONT_EXTENSIONS.contains(&&*ext.to_string_lossy()) {
@@ -106,7 +102,7 @@ fn list_installed_fonts() {
 }
 
 fn search_font(font_name: &str) {
-    let mut client = hyper::Client::new();
+    let client = hyper::Client::new();
     let url = format!("http://api.github.com/search/repositories?q={}+in:name&sort=stars&order=desc", font_name);
     let resp = client.get(&*url).send();
     match resp {
