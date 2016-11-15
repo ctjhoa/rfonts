@@ -2,7 +2,7 @@
 
 #![plugin(docopt_macros)]
 
-extern crate hyper;
+extern crate reqwest;
 extern crate docopt;
 extern crate rustc_serialize;
 
@@ -102,7 +102,7 @@ fn list_installed_fonts() {
 }
 
 fn search_font(font_name: &str) {
-    let client = hyper::Client::new();
+    let client = reqwest::Client::new().unwrap();
     let url = format!("http://api.github.com/search/repositories?q={}+in:name&sort=stars&order=desc", font_name);
     let resp = client.get(&*url).send();
     match resp {
