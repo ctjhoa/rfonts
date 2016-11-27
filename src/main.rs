@@ -5,10 +5,13 @@
 extern crate reqwest;
 extern crate docopt;
 extern crate rustc_serialize;
+extern crate serde;
+extern crate serde_json;
 
 use std::{env, fs, path};
 use std::io::Read;
 use std::process::Command;
+use serde_json::Value;
 
 static FONT_EXTENSIONS : [&'static str; 4] = ["ttf", "otf", "pcf", "bdf"];
 static WIN_FONT_REGISTRY : &'static str = "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts";
@@ -109,7 +112,11 @@ fn search_font(font_name: &str) {
         Ok(mut data) => {
             let mut body = String::new();
             data.read_to_string(&mut body).ok();
-            println!("body={}", body);
+            let json_body : Value = serde_json::from_str(&body).unwrap();
+            let items = json_body.as_object().unwrap().get("items").unwrap().as_array().unwrap();
+            for item in items {
+                println!("{}", item.as_object().unwrap().get("full_name").unwrap());
+            }
         },
         Err(err) => println!("{}", err)
     };
