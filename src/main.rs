@@ -112,11 +112,18 @@ fn search_font(font_name: &str) {
         Ok(mut data) => {
             let mut body = String::new();
             data.read_to_string(&mut body).ok();
-            let json_body : Value = serde_json::from_str(&body).unwrap();
-            let items = json_body.as_object().unwrap().get("items").unwrap().as_array().unwrap();
-            for item in items {
-                println!("{}", item.as_object().unwrap().get("full_name").unwrap());
-            }
+            let json_body = serde_json::from_str(&body).ok();
+            if let Some(items) = json_body.as_ref()
+                .and_then(Value::as_object)
+                .and_then(|x| x.get("items"))
+                .and_then(Value::as_array) {
+                    for item in items {
+                        if let Some(name) = item.as_object()
+                            .and_then(|x| x.get("full_name")) {
+                                println!("{}", name);
+                            }
+                    }
+                }
         },
         Err(err) => println!("{}", err)
     };
