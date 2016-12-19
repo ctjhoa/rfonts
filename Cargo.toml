@@ -7,7 +7,7 @@ authors = ["Camille TJHOA <camille.tjhoa@gmail.com>"]
 [dependencies]
 docopt = "0.6"
 docopt_macros = "0.6"
-reqwest = "0.1"
+reqwest = "0.2"
 rustc-serialize = "0.3"
 serde = "0.8"
 serde_json = "0.8"
